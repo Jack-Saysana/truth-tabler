@@ -35,7 +35,7 @@ Generating a truth table from the provided input file, named test.txt, which is 
 ```
 ./truth-tabler
 Enter input file:
-test
+test.txt
 Opening file...
 File found
 First line: pqr^>
