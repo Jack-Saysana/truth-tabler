@@ -56,12 +56,18 @@ The propositional statement should be written on the first line of the input fil
 
 #### Logical Operators
 
-List of reserved operators:
+##### List of reserved operators:
+
 '>' : implication
+
 'Z' : bi-conditional
+
 'x' : exclusive or
+
 '^' : and
+
 'v' : inclusive or
+
 '-' : negation
 
 All lowercase variables (except x and v) are considered propositional variables
