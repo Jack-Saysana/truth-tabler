@@ -8,6 +8,7 @@
 int get_ln(FILE *, char *);
 int parse_ln(char *);
 int pop_args(char [][BUFSIZ], int *, char[][BUFSIZ], char *, int);
+int op_exists(char [][BUFSIZ], int, char *);
 
 int gen_table(char [][BUFSIZ], char[][4], char *, int, int);
 int set(char *, char *); 
@@ -72,10 +73,19 @@ int parse_ln(char *line) {
 			pop_args(args, op, operations, op_codes[num_operations], 2);
 			op -= 2;
 			stack_len -= 2;
-			sprintf(operations[num_operations], "(%s -> %s)", args[1], args[0]);
-			op_codes[num_operations][2] = '>';
-			num_operations++;
-			*op = (num_operations * -1);
+			
+			char temp_op[BUFSIZ];
+			sprintf(temp_op, "(%s -> %s)", args[1], args[0]);
+			int op_index = op_exists(operations, num_operations, temp_op);
+			//printf("operation: %s\nindex: %d\n", temp_op, op_index);
+			if (op_index == -1) {
+				sprintf(operations[num_operations], "(%s -> %s)", args[1], args[0]);
+				op_codes[num_operations][2] = '>';
+				num_operations++;
+				*op = (num_operations * -1);
+			} else {
+				*op = (op_index + 1) * -1;
+			}
 			op++;
 			stack_len++;		
 		} else
@@ -84,10 +94,19 @@ int parse_ln(char *line) {
 			pop_args(args, op, operations, op_codes[num_operations], 2);
 			op -= 2;
 			stack_len -= 2;
-			sprintf(operations[num_operations], "(%s <-> %s)", args[1], args[0]);
-			op_codes[num_operations][2] = 'Z';
-			num_operations++;
-			*op = (num_operations * -1);
+			
+			char temp_op[BUFSIZ];
+			sprintf(temp_op, "(%s <-> %s)", args[1], args[0]);
+			int op_index = op_exists(operations, num_operations, temp_op);
+			//printf("operation: %s\nindex: %d\n", temp_op, op_index);
+			if (op_index == -1) {
+				sprintf(operations[num_operations], "(%s <-> %s)", args[1], args[0]);
+				op_codes[num_operations][2] = 'Z';
+				num_operations++;
+				*op = (num_operations * -1);
+			} else {
+				*op = (op_index + 1) * -1;
+			}
 			op++;
 			stack_len++;
 		} else
@@ -96,10 +115,19 @@ int parse_ln(char *line) {
 			pop_args(args, op, operations, op_codes[num_operations], 2);
 			op -= 2;
 			stack_len -= 2;
-			sprintf(operations[num_operations], "(%s ^ %s)", args[1], args[0]);
-			op_codes[num_operations][2] = '^';
-			num_operations++;
-			*op = (num_operations * -1);
+			
+			char temp_op[BUFSIZ];
+			sprintf(temp_op, "(%s ^ %s)", args[1], args[0]);
+			int op_index = op_exists(operations, num_operations, temp_op);
+			//printf("operation: %s\nindex: %d\n", temp_op, op_index);
+			if (op_index == -1) {
+				sprintf(operations[num_operations], "(%s ^ %s)", args[1], args[0]);
+				op_codes[num_operations][2] = '^';
+				num_operations++;
+				*op = (num_operations * -1);
+			} else {
+				*op = (op_index + 1) * -1;
+			}	
 			op++;
 			stack_len++;
 		} else
@@ -108,10 +136,19 @@ int parse_ln(char *line) {
 			pop_args(args, op, operations, op_codes[num_operations], 2);
 			op -= 2;
 			stack_len -= 2;
-			sprintf(operations[num_operations], "(%s v %s)", args[1], args[0]);
-			op_codes[num_operations][2] = 'v';
-			num_operations++;
-			*op = (num_operations * -1);
+			
+			char temp_op[BUFSIZ];
+			sprintf(temp_op, "(%s v %s)", args[1], args[0]);
+			int op_index = op_exists(operations, num_operations, temp_op);
+			//printf("operation: %s\nindex: %d\narg 0: %s\narg 1: %s\n", temp_op, op_index, args[1], args[0]);
+			if (op_index == -1) {
+				sprintf(operations[num_operations], "(%s v %s)", args[1], args[0]);
+				op_codes[num_operations][2] = 'v';
+				num_operations++;
+				*op = (num_operations * -1);
+			} else {
+				*op = (op_index + 1) * -1;
+			}	
 			op++;
 			stack_len++;
 		} else
@@ -120,10 +157,19 @@ int parse_ln(char *line) {
 			pop_args(args, op, operations, op_codes[num_operations], 2);
 			op -= 2;
 			stack_len -= 2;
-			sprintf(operations[num_operations], "(%s x %s)", args[1], args[0]);
-			op_codes[num_operations][2] = 'x';
-			num_operations++;
-			*op = (num_operations * -1);
+			
+			char temp_op[BUFSIZ];
+			sprintf(temp_op, "(%s x %s)", args[1], args[0]);
+			int op_index = op_exists(operations, num_operations, temp_op);
+			//printf("operation: %s\nindex: %d\n", temp_op, op_index);
+			if (op_index == -1) {
+				sprintf(operations[num_operations], "(%s x %s)", args[1], args[0]);
+				op_codes[num_operations][2] = 'x';
+				num_operations++;
+				*op = (num_operations * -1);
+			} else {
+				*op = (op_index + 1) * -1;
+			}	
 			op++;
 			stack_len++;
 		} else 
@@ -132,11 +178,20 @@ int parse_ln(char *line) {
 			pop_args(args, op, operations, op_codes[num_operations], 1);
 			op--;
 			stack_len--;
-			sprintf(operations[num_operations], "-%s", args[0]);
-			op_codes[num_operations][1] = '-';
-			op_codes[num_operations][2] = '\0';
-			num_operations++;
-			*op = (num_operations * -1);
+			
+			char temp_op[BUFSIZ];
+			sprintf(temp_op, "-%s", args[0]);
+			int op_index = op_exists(operations, num_operations, temp_op);
+			//printf("operation: %s\nindex: %d\n", temp_op, op_index);
+			if (op_index == -1) {
+				sprintf(operations[num_operations], "-%s", args[0]);
+				op_codes[num_operations][1] = '-';
+				op_codes[num_operations][2] = '\0';
+				num_operations++;
+				*op = (num_operations * -1);
+			} else {
+				*op = (op_index + 1) * -1;
+			}	
 			op++;
 			stack_len++;
 		} else if (next >= 'a' && next <= 'z') { 
@@ -204,6 +259,36 @@ int pop_args(char args[][BUFSIZ], int *op, char operations[][BUFSIZ], char *op_c
 	return 0;
 }
 
+int op_exists(char operations[][BUFSIZ], int num_ops, char *op) {
+	char next;
+	int length = 0;	
+	while ((next = op[length]) != '\0') {
+		length++;
+	}	
+	
+	for (int i = 0; i < num_ops; i++) {
+		int op_length = 0;
+		while ((next = operations[i][op_length]) != '\0') {
+			op_length++;
+		}
+		if (op_length == length) {
+			int same = 1;
+			for (int j = 0; j < length; j++) {
+				if (op[j] != operations[i][j]) {
+					same = 0;
+				}
+			}
+
+			if (same) {
+				return i;
+			}
+		} else {
+			break;
+		}
+	}
+	return -1;
+}
+
 int gen_table(char operations[][BUFSIZ], char op_codes[][4], char *symbols, int num_symbols, int num_ops) {
 	int rows = (int) pow(2.0, num_symbols);
 		
@@ -233,7 +318,7 @@ int gen_table(char operations[][BUFSIZ], char op_codes[][4], char *symbols, int 
 			char *op_code = op_codes[i - num_symbols];
 			int args[2];
 			char op;
-			if (op_code[1] == '\0') {
+			if (op_code[2] == '\0') {
 				if (op_code[0] < 0) {
 					args[0] = (op_code[0] * -1) + num_symbols - 1;
 				} else {
@@ -281,7 +366,7 @@ int gen_table(char operations[][BUFSIZ], char op_codes[][4], char *symbols, int 
 						table[j + 2][i][0] = 'F';
 					}
 				} else if (op == 'x') {
-					if (table[j + 2][args[0]][0] != table[j + 2][args[0]][0]) {
+					if (table[j + 2][args[0]][0] != table[j + 2][args[1]][0]) {
 						table[j + 2][i][0] = 'T';
 					} else {
 						table[j + 2][i][0] = 'F';
@@ -336,6 +421,7 @@ int set(char *dest, char *input) {
 		dest[i] = next;
 		i++;
 	}
+	dest[i] = '\0';
 
 	return i;	
 }
