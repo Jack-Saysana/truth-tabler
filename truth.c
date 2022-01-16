@@ -333,7 +333,7 @@ int gen_table(char operations[][BUFSIZ], char op_codes[][4], char *symbols, int 
 			table[1][i][0] = symbols[i];
 			//Calculate the number of times a variable repeats its value in it's column
 			int streak = (int) (((double) rows) * (1.0/(pow(2.0, i + 1))));
-			printf("Symbol: %c\ni: %d\nStreak: %d\n", symbols[i], i, streak);
+			//printf("Symbol: %c\ni: %d\nStreak: %d\n", symbols[i], i, streak);
 			//printf("for symbol %c:\n", symbols[i]);
 			
 			//Populate initial truth values
