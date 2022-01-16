@@ -15,6 +15,8 @@ int set(char *, char *);
 
 int index_of(char *, char);
 
+int alphabetize(char *, int);
+
 int main() {
 	printf("Enter input file:\n");
 	fflush(stdout);
@@ -36,6 +38,7 @@ int main() {
 	}
 }
 
+//Retrieves first line of file
 int get_ln(FILE *fp, char *line) {
 	char next;
 	int len = 0;
@@ -48,6 +51,7 @@ int get_ln(FILE *fp, char *line) {
 	return 0;
 }
 
+//Parse reverse polish notation line to generate appropriate proposition info
 int parse_ln(char *line) {
 	//Stack that keeps track of operands
 	int op_stack[100];
@@ -65,27 +69,33 @@ int parse_ln(char *line) {
 
 	char next;
 	int i = 0;
-
+	//Iterate through line, processing each character
 	while ((next = line[i]) != '\0') {
 		char args[2][BUFSIZ];
 		//Implication
 		if (next == '>') {
+			//Pop 2 arguments off the operation stack for implication	
 			pop_args(args, op, operations, op_codes[num_operations], 2);
 			op -= 2;
 			stack_len -= 2;
 			
+			//Check if exact operation exists
 			char temp_op[BUFSIZ];
 			sprintf(temp_op, "(%s -> %s)", args[1], args[0]);
 			int op_index = op_exists(operations, num_operations, temp_op);
 			//printf("operation: %s\nindex: %d\n", temp_op, op_index);
 			if (op_index == -1) {
+				//Add opperation to opperation list if it does not already exist
 				sprintf(operations[num_operations], "(%s -> %s)", args[1], args[0]);
 				op_codes[num_operations][2] = '>';
 				num_operations++;
+				//Add operation onto the stack
 				*op = (num_operations * -1);
 			} else {
+				//Add operation onto the stack	
 				*op = (op_index + 1) * -1;
 			}
+			//Increment stack pointer to empty element
 			op++;
 			stack_len++;		
 		} else
@@ -175,10 +185,12 @@ int parse_ln(char *line) {
 		} else 
 		//Negation
 		if (next == '-') {
+			//Because negation only takes one argument, we only pop one argument off the operation stack
 			pop_args(args, op, operations, op_codes[num_operations], 1);
 			op--;
 			stack_len--;
 			
+			//Check if operation already exists
 			char temp_op[BUFSIZ];
 			sprintf(temp_op, "-%s", args[0]);
 			int op_index = op_exists(operations, num_operations, temp_op);
@@ -188,14 +200,19 @@ int parse_ln(char *line) {
 				op_codes[num_operations][1] = '-';
 				op_codes[num_operations][2] = '\0';
 				num_operations++;
+				//Add operation onto stack
 				*op = (num_operations * -1);
 			} else {
+				//Add operation onto stack
 				*op = (op_index + 1) * -1;
-			}	
+			}
+			//Increment stack pointer
 			op++;
 			stack_len++;
 		} else if (next >= 'a' && next <= 'z') { 
-			if (op < &op_stack[100]) {	
+			//Handle proposition variables
+			if (op < &op_stack[100]) {
+				//Check if variable already exists	
 				int exists = 0;
 				for (int i = 0; i < num_syms; i++) {
 					if (symbols[i] == next) {
@@ -203,14 +220,17 @@ int parse_ln(char *line) {
 					}
 				}
 				if (exists == 0) {
-					if (num_syms == 10) {
+					//Ensure max number of symbols has not been exceeded	
+					if (num_syms == MAX_SYMS) {
 						printf("Exceeded max symbol count\n");
 						return -1;
 					}
 					symbols[num_syms] = next;
 					num_syms++;
 				}
+				//Add variable onto operation stack
 				*op = next;
+				//Increment stack pointer
 				op++;
 				stack_len++;
 			} else {
@@ -240,11 +260,13 @@ int parse_ln(char *line) {
 		printf("%c\n", symbols[i]);
 	}*/
 
+	alphabetize(symbols, num_syms);
 	gen_table(operations, op_codes, symbols, num_syms, num_operations);
 
 	return 0;
 }
 
+//Pops a given number of arguments off the operation stack and stores them into the args array
 int pop_args(char args[][BUFSIZ], int *op, char operations[][BUFSIZ], char *op_code, int num) {
 	for (int i = 0; i < num; i++) {
 		op--;
@@ -259,6 +281,7 @@ int pop_args(char args[][BUFSIZ], int *op, char operations[][BUFSIZ], char *op_c
 	return 0;
 }
 
+//Check if an operation exists within the operations array
 int op_exists(char operations[][BUFSIZ], int num_ops, char *op) {
 	char next;
 	int length = 0;	
@@ -289,20 +312,30 @@ int op_exists(char operations[][BUFSIZ], int num_ops, char *op) {
 	return -1;
 }
 
+//Generating a truth table from table info
 int gen_table(char operations[][BUFSIZ], char op_codes[][4], char *symbols, int num_symbols, int num_ops) {
+	//A truth tables number of rows is 2^n where n is the number of variables
 	int rows = (int) pow(2.0, num_symbols);
 		
+	// array which represents the truth table
 	// 2 additional rows for header and character count
 	char table[MAX_ROWS + 2][MAX_OPS][BUFSIZ];
 
+	// Iterate through the table and create each column of info
 	int cols = 0;
 	for (int i = 0; i < num_symbols + num_ops; i++) {
 		cols++;
+		//Truth values for an individual variable
 		if (i < num_symbols) {
+			//Sets the character width of the column to 3	
 			table[0][i][0] = 3;	
+			//Set the column header to the variable
 			table[1][i][0] = symbols[i];
+			//Calculate the number of times a variable repeats its value in it's column
 			int streak = (int) (((double) rows) * (1.0/(2.0 * (i + 1.0))));
 			//printf("for symbol %c:\n", symbols[i]);
+			
+			//Populate initial truth values
 			for (int j = 0; j < rows; j++) {
 				if ((j / streak) % 2 == 0) {
 					table[j + 2][i][0] = 'T';
@@ -313,11 +346,14 @@ int gen_table(char operations[][BUFSIZ], char op_codes[][4], char *symbols, int 
 				}
 			}
 		} else {
+			//Sets character width of column to the length of the expression + 2 while also simultaneously setting the table header to the expression	
 			table[0][i][0] = set(table[1][i], operations[i - num_symbols]) + 2;
 			//printf("operation: %s\nlength: %d\n", table[1][i], table[0][i][0]);
+			//Get the operation code, which specifies which arguments and what operation is represented by the current expression
 			char *op_code = op_codes[i - num_symbols];
 			int args[2];
 			char op;
+			//Handling incase an operation takes only 1 argument (such as negation)
 			if (op_code[2] == '\0') {
 				if (op_code[0] < 0) {
 					args[0] = (op_code[0] * -1) + num_symbols - 1;
@@ -327,6 +363,7 @@ int gen_table(char operations[][BUFSIZ], char op_codes[][4], char *symbols, int 
 				args[1] = -1;
 				op = op_code[1];
 			} else {
+				//Handling for operations that take 2 arguments
 				if (op_code[0] < 0) {
 					args[0] = (op_code[0] * -1) + num_symbols - 1;
 				} else {
@@ -340,6 +377,7 @@ int gen_table(char operations[][BUFSIZ], char op_codes[][4], char *symbols, int 
 				op = op_code[2];
 			}
 			//printf("op_code: %s\narg 1: %d\narg 2: %d\nop: %c\n", op_code, args[0], args[1], op);
+			// Determine truth value of expression based on the row's variable's combonation of truth values
 			for (int j = 0; j < rows; j++) {
 				if (op == '>') {
 					if (table[j + 2][args[0]][0] == 'F' && table[j + 2][args[1]][0] == 'T') {
@@ -426,6 +464,7 @@ int set(char *dest, char *input) {
 	return i;	
 }
 
+//Retrieves the index at which a character occurs in a string, if any
 int index_of(char *arr, char elem) {
 	char next;
 	int i = 0;
@@ -439,3 +478,18 @@ int index_of(char *arr, char elem) {
 	return -1;
 }
 
+//Alphabetizes variables utilizing bubble sort (reatively slow)
+int alphabetize(char *arr, int count) {
+	char temp;
+	for (int i = 0; i < count - 1; i++) {
+		for (int j = 0; j < count - i - 1; j++) {
+			if (arr[j] > arr[j+1]) {
+				temp = arr[j];
+				arr[j] = arr[j + 1];
+				arr[j + 1] = temp;
+			}
+		}
+	}
+
+	return 0;
+}
