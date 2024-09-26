@@ -7,10 +7,10 @@
 
 int get_ln(FILE *, char *);
 int parse_ln(char *);
-int pop_args(char [][BUFSIZ], int *, char[][BUFSIZ], char *, int);
-int op_exists(char [][BUFSIZ], int, char *);
+int pop_args(char [][64], int *, char[][64], char *, int);
+int op_exists(char [][64], int, char *);
 
-int gen_table(char [][BUFSIZ], char[][4], char *, int, int);
+int gen_table(char [][64], char[][4], char *, int, int);
 int set(char *, char *); 
 
 int index_of(char *, char);
@@ -20,7 +20,7 @@ int alphabetize(char *, int);
 int main() {
 	printf("Enter input file:\n");
 	fflush(stdout);
-	char f_name[BUFSIZ];
+	char f_name[64];
 	scanf("%s", f_name);
 	printf("Opening file...\n");
 
@@ -30,7 +30,7 @@ int main() {
 		printf("File not found\n");
 	} else {
 		printf("File found\n");
-		char line[BUFSIZ];
+		char line[64];
 		get_ln(fp, line);
 		printf("First line: %s", line);
 
@@ -63,7 +63,7 @@ int parse_ln(char *line) {
 	char symbols[MAX_SYMS];
 	int num_syms = 0;
 	//Holds operations of statement
-	char operations[MAX_OPS][BUFSIZ];
+	char operations[MAX_OPS][64];
 	char op_codes[MAX_OPS][4];
 	int num_operations = 0;
 
@@ -71,7 +71,7 @@ int parse_ln(char *line) {
 	int i = 0;
 	//Iterate through line, processing each character
 	while ((next = line[i]) != '\0') {
-		char args[2][BUFSIZ];
+		char args[2][64];
 		//Implication
 		if (next == '>') {
 			//Pop 2 arguments off the operation stack for implication	
@@ -80,7 +80,7 @@ int parse_ln(char *line) {
 			stack_len -= 2;
 			
 			//Check if exact operation exists
-			char temp_op[BUFSIZ];
+			char temp_op[64];
 			sprintf(temp_op, "(%s -> %s)", args[1], args[0]);
 			int op_index = op_exists(operations, num_operations, temp_op);
 			//printf("operation: %s\nindex: %d\n", temp_op, op_index);
@@ -105,7 +105,7 @@ int parse_ln(char *line) {
 			op -= 2;
 			stack_len -= 2;
 			
-			char temp_op[BUFSIZ];
+			char temp_op[64];
 			sprintf(temp_op, "(%s <-> %s)", args[1], args[0]);
 			int op_index = op_exists(operations, num_operations, temp_op);
 			//printf("operation: %s\nindex: %d\n", temp_op, op_index);
@@ -126,7 +126,7 @@ int parse_ln(char *line) {
 			op -= 2;
 			stack_len -= 2;
 			
-			char temp_op[BUFSIZ];
+			char temp_op[64];
 			sprintf(temp_op, "(%s ^ %s)", args[1], args[0]);
 			int op_index = op_exists(operations, num_operations, temp_op);
 			//printf("operation: %s\nindex: %d\n", temp_op, op_index);
@@ -147,7 +147,7 @@ int parse_ln(char *line) {
 			op -= 2;
 			stack_len -= 2;
 			
-			char temp_op[BUFSIZ];
+			char temp_op[64];
 			sprintf(temp_op, "(%s v %s)", args[1], args[0]);
 			int op_index = op_exists(operations, num_operations, temp_op);
 			//printf("operation: %s\nindex: %d\narg 0: %s\narg 1: %s\n", temp_op, op_index, args[1], args[0]);
@@ -168,7 +168,7 @@ int parse_ln(char *line) {
 			op -= 2;
 			stack_len -= 2;
 			
-			char temp_op[BUFSIZ];
+			char temp_op[64];
 			sprintf(temp_op, "(%s x %s)", args[1], args[0]);
 			int op_index = op_exists(operations, num_operations, temp_op);
 			//printf("operation: %s\nindex: %d\n", temp_op, op_index);
@@ -191,7 +191,7 @@ int parse_ln(char *line) {
 			stack_len--;
 			
 			//Check if operation already exists
-			char temp_op[BUFSIZ];
+			char temp_op[64];
 			sprintf(temp_op, "-%s", args[0]);
 			int op_index = op_exists(operations, num_operations, temp_op);
 			//printf("operation: %s\nindex: %d\n", temp_op, op_index);
@@ -267,7 +267,7 @@ int parse_ln(char *line) {
 }
 
 //Pops a given number of arguments off the operation stack and stores them into the args array
-int pop_args(char args[][BUFSIZ], int *op, char operations[][BUFSIZ], char *op_code, int num) {
+int pop_args(char args[][64], int *op, char operations[][64], char *op_code, int num) {
 	for (int i = 0; i < num; i++) {
 		op--;
 		if (*op < 0) {
@@ -282,7 +282,7 @@ int pop_args(char args[][BUFSIZ], int *op, char operations[][BUFSIZ], char *op_c
 }
 
 //Check if an operation exists within the operations array
-int op_exists(char operations[][BUFSIZ], int num_ops, char *op) {
+int op_exists(char operations[][64], int num_ops, char *op) {
 	char next;
 	int length = 0;	
 	while ((next = op[length]) != '\0') {
@@ -313,13 +313,13 @@ int op_exists(char operations[][BUFSIZ], int num_ops, char *op) {
 }
 
 //Generating a truth table from table info
-int gen_table(char operations[][BUFSIZ], char op_codes[][4], char *symbols, int num_symbols, int num_ops) {
+int gen_table(char operations[][64], char op_codes[][4], char *symbols, int num_symbols, int num_ops) {
 	//A truth tables number of rows is 2^n where n is the number of variables
 	int rows = (int) pow(2.0, num_symbols);
 		
 	// array which represents the truth table
 	// 2 additional rows for header and character count
-	char table[MAX_ROWS + 2][MAX_OPS][BUFSIZ];
+	char table[MAX_ROWS + 2][MAX_OPS][64];
 
 	// Iterate through the table and create each column of info
 	int cols = 0;
