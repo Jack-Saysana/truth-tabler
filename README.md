@@ -89,4 +89,9 @@ So the statement above translates to:
 p -> (q ^ r)
 ```
 
+#### TODO
+- Dynamic allocation of buffer resources
+  - Bounds checking, etc...
+  - **Assigned to:** Zack Bostock
+
 
